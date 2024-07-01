@@ -21,39 +21,22 @@ abstract class AbstractManager
         );
     }
 
-    private function getDatabaseInfo() : array
+    private function getDatabaseInfo() : void
     {
-        $handle = fopen("config/database.txt", "r");
-        $lineNbr = 0;
-        $info = [];
-
-        if ($handle) {
-
-            while (($line = fgets($handle)) !== false) {
-
-                if($lineNbr === 0)
-                {
-                    $info["user"] = trim($line);
-                }
-                else if($lineNbr === 1)
-                {
-                    $info["password"] = trim($line);
-                }
-                else if($lineNbr === 2)
-                {
-                    $info["host"] = trim($line);
-                }
-                else if($lineNbr === 3)
-                {
-                    $info["db_name"] = trim($line);
-                }
-
-                $lineNbr++;
-            }
-
-            fclose($handle);
+        require_once __DIR__ . '/vendor/autoload.php';
+        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+        $dotenv->load();
+        $dbHost = $_ENV['DB_HOST'];
+        $dbUser = $_ENV['DB_USER'];
+        $dbPass = $_ENV['DB_PASS'];
+        $dbName = $_ENV['DB_NAME'];
+        try {
+            $conn = new PDO("mysql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
+            // Définir le mode d'erreur PDO à exception
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            echo "Connexion réussie";
+            } catch(PDOException $e) {
+            echo "Erreur de connexion : " . $e->getMessage();
         }
-
-        return $info;
     }
 }
